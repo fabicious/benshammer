@@ -318,6 +318,29 @@ function setRain(on) {
   if (on) { resizeRain(); rainFrame(); }
 }
 
+const PX = 90, PY = 450, R1 = 150, R2 = 180;
+const TOTAL = Math.round((END - START) / DAY);
+function pt(r, deg) {
+  const a = deg * Math.PI / 180;
+  return [(PX + r * Math.sin(a)).toFixed(1), (PY - r * Math.cos(a)).toFixed(1)];
+}
+function drawGauge(progress) {
+  let out = "";
+  for (let i = 0; i < 10; i++) {
+    const a0 = i * 9 + 0.8, a1 = (i + 1) * 9 - 0.8;
+    const [x1, y1] = pt(R1, a0), [x2, y2] = pt(R1, a1), [x3, y3] = pt(R2, a1), [x4, y4] = pt(R2, a0);
+    const lit = progress * 10 > i;
+    const t = i / 9;
+    const color = lit ? `hsl(${50 - 50 * t}, 100%, 60%)` : "#1c1c4a";
+    out += `<path d="M${x1} ${y1} A${R1} ${R1} 0 0 1 ${x2} ${y2} L${x3} ${y3} A${R2} ${R2} 0 0 0 ${x4} ${y4} Z" fill="${color}"/>`;
+  }
+  for (let i = 0; i <= 10; i++) {
+    const [x, y] = pt(R2 + 22, i * 9);
+    out += `<text x="${x}" y="${y}" fill="#8f8fc8" font-family="'Press Start 2P', monospace" font-size="14" text-anchor="middle" dominant-baseline="middle">${Math.round(TOTAL * (1 - i / 10))}</text>`;
+  }
+  document.getElementById("gauge").innerHTML = out;
+}
+
 function currentPhase(today) {
   if (override) return override;
   if (today >= AFTER) return "rain";
