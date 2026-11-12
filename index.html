@@ -90,7 +90,8 @@
     transform-origin: 90px 450px;
     transition: transform 1s steps(12, end);
   }
-  .stage.hit { animation: shake .5s steps(2) 3; }
+  body.party .stage, body.party .bar, body.party .trivia { animation: shake .5s steps(2) infinite; }
+  @media (prefers-reduced-motion: reduce) { body.party .stage, body.party .bar, body.party .trivia { animation: none; } }
   @keyframes shake {
     0%,100% { transform: translate(0,0); }
     25% { transform: translate(-8px, 4px); }
