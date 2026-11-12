@@ -375,7 +375,7 @@ function update() {
   document.getElementById("drink").style.display = phase === "count" ? "" : "none";
 
   document.getElementById("days").textContent = phase === "party" ? "🚀" : phase === "rain" ? "?" : left;
-  document.getElementById("label").textContent = left === 1 ? "Tag" : "Tage";
+  document.getElementById("label").textContent = phase === "party" ? "KARETE" : left === 1 ? "Tag" : "Tage";
   document.getElementById("pct").textContent = Math.round(progress * 100) + " %";
   document.getElementById("fill").style.width = (progress * 100) + "%";
   document.getElementById("trivia").textContent =
