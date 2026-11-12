@@ -42,6 +42,18 @@
       repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 2px, transparent 2px 4px),
       radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%);
   }
+  /* Phase "party": 21.-23.01.2027 */
+  body.party { animation: flash .5s steps(1) infinite; }
+  @keyframes flash {
+    0%   { background-color: #0b0b1f; }
+    20%  { background-color: #ff2e63; }
+    40%  { background-color: #ffd800; }
+    60%  { background-color: #2eff9a; }
+    80%  { background-color: #4a4ae0; }
+  }
+  @media (prefers-reduced-motion: reduce) { body.party { animation: none; background-color: #3a0f3a; } }
+  #rain { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9; display: none; }
+  body.rain #rain { display: block; }
   h1 {
     font-size: clamp(1.1rem, 4.4vw, 2.4rem);
     line-height: 1.4;
@@ -121,6 +133,7 @@
 </style>
 </head>
 <body>
+  <canvas id="rain"></canvas>
   <h1>Wann fällt der Benshammer?</h1>
   <p class="sub">Der Hammer fällt am 21. Januar 2027.</p>
 
@@ -256,64 +269,88 @@ const TRIVIA = [
 /* 70 */ "Vor 70 Jahren (1956) wurde bei der Dartmouth-Konferenz der Begriff „Künstliche Intelligenz“ geprägt – deine NPCs danken."
 ];
 
-const START = Date.UTC(2026, 10, 12);  // 12.11.2026 = 100 %
-const END   = Date.UTC(2027, 0, 21);   // 21.01.2027
+const START = Date.UTC(2026, 10, 12);  // 12.11.2026 = 0 % Fortschritt
+const END   = Date.UTC(2027, 0, 21);   // 21.01.2027: der Hammer fällt
+const AFTER = Date.UTC(2027, 0, 24);   // 24.01.2027: Hammer wieder oben, es regnet
 const DAY = 86400000;
+const RAIN_TEXT = "Der Hammer ist gefallen – jetzt hängt er wieder oben und es regnet. Insert Coin, um es noch einmal zu versuchen.";
 
-
-const PX = 90, PY = 450, R1 = 150, R2 = 180;
-function pt(r, deg) {
-  const a = deg * Math.PI / 180;
-  return [(PX + r * Math.sin(a)).toFixed(1), (PY - r * Math.cos(a)).toFixed(1)];
-}
-const TOTAL = Math.round((Date.UTC(2027, 0, 21) - Date.UTC(2026, 10, 12)) / 86400000);
-function drawGauge(progress) {
-  let out = "";
-  for (let i = 0; i < 10; i++) {
-    const a0 = i * 9 + 0.8, a1 = (i + 1) * 9 - 0.8;
-    const [x1, y1] = pt(R1, a0), [x2, y2] = pt(R1, a1), [x3, y3] = pt(R2, a1), [x4, y4] = pt(R2, a0);
-    const lit = progress * 10 > i;
-    const t = i / 9;
-    const color = lit ? `hsl(${50 - 50 * t}, 100%, 60%)` : "#1c1c4a";
-    out += `<path d="M${x1} ${y1} A${R1} ${R1} 0 0 1 ${x2} ${y2} L${x3} ${y3} A${R2} ${R2} 0 0 0 ${x4} ${y4} Z" fill="${color}"/>`;
-  }
-  for (let i = 0; i <= 10; i++) {
-    const [x, y] = pt(R2 + 22, i * 9);
-    out += `<text x="${x}" y="${y}" fill="#8f8fc8" font-family="'Press Start 2P', monospace" font-size="14" text-anchor="middle" dominant-baseline="middle">${Math.round(TOTAL * (1 - i / 10))}</text>`;
-  }
-  document.getElementById("gauge").innerHTML = out;
-}
-
-// Geheimcode: "johnny" tippen simuliert 0 verbleibende Tage (nochmal tippen = zurück)
-let johnny = false;
+// Geheimcodes: "johnny" simuliert 0 Tage (Party-Phase), "karete" die Regen-Phase.
+// Derselbe Code nochmal = zurück zur echten Phase.
+const CODES = { johnny: "party", karete: "rain" };
+let override = null;
 let typed = "";
 window.addEventListener("keydown", e => {
   if (e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
   typed = (typed + e.key.toLowerCase()).slice(-6);
-  if (typed === "johnny") { johnny = !johnny; typed = ""; update(); }
+  const phase = CODES[typed];
+  if (phase) { override = override === phase ? null : phase; typed = ""; update(); }
 });
+
+// Regen
+const canvas = document.getElementById("rain");
+const ctx = canvas.getContext("2d");
+let drops = [], raining = false;
+function resizeRain() {
+  canvas.width = Math.ceil(innerWidth / 4);   // grobe Pixel
+  canvas.height = Math.ceil(innerHeight / 4);
+  drops = Array.from({ length: Math.ceil(canvas.width / 2.5) }, () => ({
+    x: Math.floor(Math.random() * canvas.width),
+    y: Math.random() * canvas.height,
+    v: 1 + Math.random() * 1.5,
+    l: 2 + Math.floor(Math.random() * 3)
+  }));
+}
+function rainFrame() {
+  if (!raining) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#7ab8ff";
+  for (const d of drops) {
+    ctx.fillRect(d.x, Math.floor(d.y), 1, d.l);
+    d.y += d.v;
+    if (d.y > canvas.height) { d.y = -d.l; d.x = Math.floor(Math.random() * canvas.width); }
+  }
+  requestAnimationFrame(rainFrame);
+}
+function setRain(on) {
+  if (on === raining) return;
+  raining = on;
+  if (on) { resizeRain(); rainFrame(); }
+}
+
+function currentPhase(today) {
+  if (override) return override;
+  if (today >= AFTER) return "rain";
+  if (today >= END) return "party";
+  return "count";
+}
 
 function update() {
   const now = new Date();
   const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-  const left = johnny ? 0 : Math.max(0, Math.round((END - today) / DAY));
-  const progress = johnny ? 1 : Math.min(1, Math.max(0, (today - START) / (END - START)));
+  const phase = currentPhase(today);
+  const left = phase === "count" ? Math.max(1, Math.round((END - today) / DAY)) : 0;
+  const progress = phase === "party" ? 1 : phase === "rain" ? 0
+    : Math.min(1, Math.max(0, (today - START) / (END - START)));
 
-  document.getElementById("days").textContent = left;
+  document.body.classList.toggle("party", phase === "party");
+  document.body.classList.toggle("rain", phase === "rain");
+  setRain(phase === "rain");
+
+  document.getElementById("days").textContent = phase === "party" ? "🚀" : phase === "rain" ? "?" : left;
   document.getElementById("label").textContent = left === 1 ? "Tag" : "Tage";
   document.getElementById("pct").textContent = Math.round(progress * 100) + " %";
   document.getElementById("fill").style.width = (progress * 100) + "%";
-
-  const idx = Math.min(left, TRIVIA.length - 1);
-  document.getElementById("trivia").textContent = TRIVIA[idx];
+  document.getElementById("trivia").textContent =
+    phase === "rain" ? RAIN_TEXT : TRIVIA[Math.min(left, TRIVIA.length - 1)];
 
   const stage = document.getElementById("stage");
   document.getElementById("hammer").style.transform = `rotate(${progress * 90}deg)`;
   drawGauge(progress);
   stage.classList.remove("hit");
-  if (left === 0) { void stage.offsetWidth; stage.classList.add("hit"); }
+  if (phase === "party") { void stage.offsetWidth; stage.classList.add("hit"); }
 }
-window.addEventListener("resize", update);
+window.addEventListener("resize", () => { update(); if (raining) resizeRain(); });
 window.addEventListener("load", update);
 update();
 setInterval(update, 60 * 1000);
