@@ -54,6 +54,13 @@
   @media (prefers-reduced-motion: reduce) { body.party { animation: none; background-color: #3a0f3a; } }
   #rain { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9; display: none; }
   body.rain #rain { display: block; }
+  #gameover {
+    position: fixed; inset: 0; z-index: 8; pointer-events: none;
+    display: none; align-items: center; justify-content: center;
+    font-size: 10vw; white-space: nowrap; color: var(--accent2); opacity: .3;
+    text-shadow: .06em .06em 0 #000;
+  }
+  body.rain #gameover { display: flex; }
   h1 {
     font-size: clamp(1.1rem, 4.4vw, 2.4rem);
     line-height: 1.4;
@@ -143,6 +150,7 @@
 </head>
 <body>
   <canvas id="rain"></canvas>
+  <div id="gameover" aria-hidden="true">GAME OVER</div>
   <h1>Wann fällt der Benshammer?</h1>
   <p class="sub" id="sub">Der Hammer fällt am 21. Januar 2027.</p>
 
