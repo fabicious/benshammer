@@ -135,7 +135,7 @@
 <body>
   <canvas id="rain"></canvas>
   <h1>Wann fällt der Benshammer?</h1>
-  <p class="sub">Der Hammer fällt am 21. Januar 2027.</p>
+  <p class="sub" id="sub">Der Hammer fällt am 21. Januar 2027.</p>
 
   <main>
     <div class="stage" id="stage" aria-label="Fortschritt: Hammer schwingt Richtung Amboss">
@@ -359,6 +359,10 @@ function update() {
   document.body.classList.toggle("party", phase === "party");
   document.body.classList.toggle("rain", phase === "rain");
   setRain(phase === "rain");
+  document.getElementById("sub").textContent =
+    phase === "party" ? "Der Hammer ist gefallen. Zeit zum abbauen"
+    : phase === "rain" ? "Der Hammer fällt am ?"
+    : "Der Hammer fällt am 21. Januar 2027.";
   document.getElementById("drink").style.display = phase === "count" ? "" : "none";
 
   document.getElementById("days").textContent = phase === "party" ? "🚀" : phase === "rain" ? "?" : left;
