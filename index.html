@@ -4,36 +4,55 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Wann fällt der Benshammer?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f0b1e;
-    --fg: #f3efff;
-    --muted: #9b92c4;
-    --accent: #ffcc33;
-    --accent2: #ff4d6d;
-    --panel: #1b1535;
+    --bg: #0b0b1f;
+    --fg: #f4f4ff;
+    --muted: #8f8fc8;
+    --accent: #ffd800;
+    --accent2: #ff2e63;
+    --panel: #14143a;
+    --edge: #4a4ae0;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; }
   body {
-    background: radial-gradient(ellipse at 50% 0%, #2a1b5e 0%, var(--bg) 60%) fixed;
+    background-color: var(--bg);
+    background-image:
+      linear-gradient(rgba(74,74,224,.12) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74,74,224,.12) 1px, transparent 1px);
+    background-size: 32px 32px;
     color: var(--fg);
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-family: "Press Start 2P", ui-monospace, Menlo, Consolas, monospace;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 32px 16px 48px;
     overflow-x: hidden;
+    image-rendering: pixelated;
+  }
+  /* CRT scanlines + vignette */
+  body::after {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 10;
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 2px, transparent 2px 4px),
+      radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.55) 100%);
   }
   h1 {
-    font-size: clamp(1.8rem, 6vw, 3.6rem);
+    font-size: clamp(1.1rem, 4.4vw, 2.4rem);
+    line-height: 1.4;
     text-align: center;
-    margin: 0 0 8px;
-    letter-spacing: .02em;
-    text-shadow: 0 0 24px rgba(255, 204, 51, .35);
+    margin: 0 0 12px;
+    color: var(--accent);
+    text-shadow: 4px 4px 0 var(--accent2), 8px 8px 0 #000;
   }
-  .sub { color: var(--muted); text-align: center; margin: 0 0 24px; font-size: .95rem; }
+  .sub { color: var(--muted); text-align: center; margin: 0 0 28px; font-size: .65rem; line-height: 1.8; }
+  .sub::after { content: "_"; animation: blink 1s steps(1) infinite; color: var(--accent); }
+  @keyframes blink { 50% { opacity: 0; } }
 
   main {
     width: 100%;
@@ -49,53 +68,56 @@
     position: relative;
     aspect-ratio: 540 / 560;
     width: 100%;
-    background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0));
-    border: 2px solid #3a2f6e;
-    border-radius: 12px;
+    background: #070718;
+    border: 4px solid var(--edge);
+    box-shadow: 0 0 0 4px #000, 8px 8px 0 4px #000;
     overflow: hidden;
   }
   .stage svg { display: block; width: 100%; height: 100%; }
   #hammer {
     transform-origin: 90px 450px;
-    transition: transform 1s cubic-bezier(.3,1.4,.5,1);
-    filter: drop-shadow(0 6px 10px rgba(0,0,0,.5));
+    transition: transform 1s steps(12, end);
   }
-  .stage.hit { animation: shake .5s 3; }
+  .stage.hit { animation: shake .5s steps(2) 3; }
   @keyframes shake {
     0%,100% { transform: translate(0,0); }
-    25% { transform: translate(-6px, 4px); }
-    75% { transform: translate(6px, -4px); }
+    25% { transform: translate(-8px, 4px); }
+    75% { transform: translate(8px, -4px); }
   }
   .pct {
     position: absolute; top: 10px; right: 12px;
-    font-size: .9rem; color: var(--accent);
-    background: rgba(0,0,0,.4); padding: 4px 8px; border-radius: 6px;
+    font-size: .7rem; color: var(--accent);
+    background: #000; padding: 6px 8px; border: 2px solid var(--accent);
   }
 
-  .info { display: flex; flex-direction: column; gap: 20px; justify-content: center; }
+  .info { display: flex; flex-direction: column; gap: 24px; justify-content: center; }
   .count { text-align: center; }
   .count .num {
-    font-size: clamp(6rem, 22vw, 11rem);
-    line-height: 1;
-    font-weight: 800;
+    font-size: clamp(4rem, 15vw, 7.5rem);
+    line-height: 1.1;
     color: var(--accent);
-    text-shadow: 0 0 40px rgba(255, 204, 51, .4);
-    font-variant-numeric: tabular-nums;
+    text-shadow: 6px 6px 0 var(--accent2), 12px 12px 0 #000;
   }
-  .count .label { font-size: 1.4rem; color: var(--muted); text-transform: uppercase; letter-spacing: .2em; }
-  .bar { height: 14px; background: var(--panel); border-radius: 8px; overflow: hidden; border: 1px solid #3a2f6e; }
-  .bar > div { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .8s ease; }
+  .count .label { font-size: 1rem; margin-top: 16px; color: var(--fg); text-transform: uppercase; letter-spacing: .2em; }
+  .bar {
+    height: 28px; background: #000; padding: 4px;
+    border: 4px solid var(--edge);
+    box-shadow: 4px 4px 0 #000;
+  }
+  .bar > div {
+    height: 100%; width: 0; transition: width .8s steps(10, end);
+    background: repeating-linear-gradient(90deg, var(--accent) 0 12px, var(--accent2) 12px 16px, transparent 16px 20px);
+  }
   .trivia {
     background: var(--panel);
-    border: 2px solid #3a2f6e;
-    border-left: 6px solid var(--accent);
-    border-radius: 10px;
-    padding: 16px 18px;
-    line-height: 1.5;
+    border: 4px solid var(--edge);
+    box-shadow: 0 0 0 4px #000, 8px 8px 0 4px #000;
+    padding: 18px;
+    line-height: 1.8;
   }
-  .trivia h2 { margin: 0 0 8px; font-size: .8rem; color: var(--accent); letter-spacing: .15em; text-transform: uppercase; }
-  .trivia p { margin: 0; font-size: 1.05rem; }
-  .dates { display: flex; justify-content: space-between; color: var(--muted); font-size: .8rem; }
+  .trivia h2 { margin: 0 0 12px; font-size: .65rem; color: var(--accent2); letter-spacing: .1em; text-transform: uppercase; }
+  .trivia h2::before { content: "\25B6  "; color: var(--accent); }
+  .trivia p { margin: 0; font-size: .7rem; }
 </style>
 </head>
 <body>
@@ -105,22 +127,22 @@
   <main>
     <div class="stage" id="stage" aria-label="Fortschritt: Hammer schwingt Richtung Amboss">
       <div class="pct" id="pct">0 %</div>
-      <svg viewBox="0 0 540 560" aria-hidden="true">
+      <svg viewBox="0 0 540 560" aria-hidden="true" shape-rendering="crispEdges">
         <g id="gauge"></g>
-        <rect x="0" y="520" width="540" height="4" fill="#3a2f6e"/>
+        <rect x="0" y="520" width="540" height="4" fill="#4a4ae0"/>
         <path d="M360 520 H500 L485 535 H455 L450 548 H462 V560 H398 V548 H410 L405 535 H375 Z" fill="#3b3f4d"/>
         <path d="M360 520 H500 L496 526 H364 Z" fill="#6a7086"/>
         <g id="hammer">
-          <rect x="78" y="90" width="24" height="372" rx="8" fill="#a8683a"/>
-          <rect x="78" y="90" width="8" height="372" rx="4" fill="#c98551"/>
-          <rect x="74" y="430" width="32" height="32" rx="8" fill="#5b3a1f"/>
-          <rect x="20" y="60" width="140" height="60" rx="10" fill="#8a93a6"/>
-          <rect x="20" y="60" width="140" height="16" rx="8" fill="#b7bfd0"/>
-          <rect x="20" y="106" width="140" height="14" rx="7" fill="#5d6577"/>
-          <rect x="8" y="64" width="20" height="52" rx="6" fill="#6c7487"/>
-          <rect x="152" y="64" width="20" height="52" rx="6" fill="#6c7487"/>
+          <rect x="78" y="90" width="24" height="372" fill="#b5651d"/>
+          <rect x="78" y="90" width="8" height="372" fill="#c98551"/>
+          <rect x="74" y="430" width="32" height="32" fill="#5b3a1f"/>
+          <rect x="20" y="60" width="140" height="60" fill="#8a93a6"/>
+          <rect x="20" y="60" width="140" height="16" fill="#b7bfd0"/>
+          <rect x="20" y="106" width="140" height="14" fill="#5d6577"/>
+          <rect x="8" y="64" width="20" height="52" fill="#6c7487"/>
+          <rect x="152" y="64" width="20" height="52" fill="#6c7487"/>
         </g>
-        <circle cx="90" cy="450" r="9" fill="#ffcc33"/>
+        <rect x="80" y="440" width="20" height="20" fill="#ffd800"/>
       </svg>
     </div>
 
@@ -133,7 +155,7 @@
         <div class="bar"><div id="fill"></div></div>
       </div>
       <div class="trivia">
-        <h2>Nerd-Wissen für heute</h2>
+        <h2>Nerd-Wissen</h2>
         <p id="trivia"></p>
       </div>
     </div>
@@ -233,12 +255,12 @@ function drawGauge(progress) {
     const [x1, y1] = pt(R1, a0), [x2, y2] = pt(R1, a1), [x3, y3] = pt(R2, a1), [x4, y4] = pt(R2, a0);
     const lit = progress * 10 > i;
     const t = i / 9;
-    const color = lit ? `hsl(${50 - 50 * t}, 100%, 60%)` : "#2a2150";
+    const color = lit ? `hsl(${50 - 50 * t}, 100%, 60%)` : "#1c1c4a";
     out += `<path d="M${x1} ${y1} A${R1} ${R1} 0 0 1 ${x2} ${y2} L${x3} ${y3} A${R2} ${R2} 0 0 0 ${x4} ${y4} Z" fill="${color}"/>`;
   }
   for (let i = 0; i <= 10; i++) {
     const [x, y] = pt(R2 + 22, i * 9);
-    out += `<text x="${x}" y="${y}" fill="#9b92c4" font-family="monospace" font-size="16" text-anchor="middle" dominant-baseline="middle">${Math.round(TOTAL * (1 - i / 10))}</text>`;
+    out += `<text x="${x}" y="${y}" fill="#8f8fc8" font-family="'Press Start 2P', monospace" font-size="14" text-anchor="middle" dominant-baseline="middle">${Math.round(TOTAL * (1 - i / 10))}</text>`;
   }
   document.getElementById("gauge").innerHTML = out;
 }
